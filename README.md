@@ -2,7 +2,8 @@
 
 Simple command line tool to view HashLink objects in runtime.
 
-Currently is hardcoded to be used with Evoland, but this can be changed for other HashLink applications. 
+Currently is hardcoded to be used with Evoland
+but this can be changed for other HashLink applications. 
 
 ## Usage
 - Open `HashLinkTypeViewer.exe`

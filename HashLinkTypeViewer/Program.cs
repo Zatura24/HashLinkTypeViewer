@@ -112,6 +112,8 @@ namespace EvolandConsoleTestings
 
 internal class Program
     {
+        private static int[] T_SIZES = new int[] { 0, 1, 2, 4, 8, 4, 8, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0 };
+
         static Process? game;
 
         static HashSet<IntPtr> visited = new HashSet<IntPtr>();
@@ -182,6 +184,12 @@ internal class Program
             return new DeepPointer(baseAddress, 0x0).Deref<hl_type_kind>(game);
         }
 
+        static int ReadTypeInt(IntPtr baseAddress)
+        {
+            if (game == null) { return 0; }
+
+            return new DeepPointer(baseAddress, 0x0).Deref<int>(game);
+        }
         static void ReadHENUM(IntPtr baseAddress, int depth)
         {
             if (game == null) { return; }
@@ -210,13 +218,15 @@ internal class Program
 
             hl_type_virtual virt = new DeepPointer(baseAddress, 0x4, 0x0).Deref<hl_type_virtual>(game);
 
-            Dictionary<int, int> lookup = new Dictionary<int, int>();
+            int start = 0;
 
-            for (int i = 0; i < virt.nfields; i++)
-            {
-                hl_field_lookup fieldLookup = new DeepPointer(virt.lookup, 0x0 + 0xC * i).Deref<hl_field_lookup>(game);
-                lookup.Add(fieldLookup.hashed_name, fieldLookup.field_index);
-            }
+            //Dictionary<int, int> lookup = new Dictionary<int, int>();
+
+            //for (int i = 0; i < virt.nfields; i++)
+            //{
+            //    hl_field_lookup fieldLookup = new DeepPointer(virt.lookup, 0x0 + 0xC * i).Deref<hl_field_lookup>(game);
+            //    lookup.Add(fieldLookup.hashed_name, fieldLookup.field_index);
+            //}
 
             for (int i = 0; i < virt.nfields; i++)
             {
@@ -224,10 +234,10 @@ internal class Program
                 string objFieldName = new DeepPointer(objField.name, 0x0).DerefString(game, ReadStringType.UTF16, 50);
                 if (objField.hashed_name != 0)
                 {
-
+                    start = start + T_SIZES[ReadTypeInt(objField.t)];
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     Enumerable.Range(0, depth).ToList().ForEach(i => Console.Write("\t"));
-                    Console.WriteLine("name: {0,-25} at: 0x{1,-3:X} type: {2}", objFieldName, lookup[objField.hashed_name], ReadTypeKind(objField.t));
+                    Console.WriteLine("name: {0,-25} at: 0x{1,-3:X} type: {2}", objFieldName, start, ReadTypeKind(objField.t));
                     Console.ForegroundColor = ConsoleColor.White;
 
                     hl_type_kind type = ReadTypeKind(objField.t);
